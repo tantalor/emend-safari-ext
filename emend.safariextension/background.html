@@ -1,0 +1,22 @@
+<script src="sha1-min.js" type="text/javascript" charset="utf-8"></script>
+<script src="https://www.google.com/jsapi?key=ABQIAAAA-97Boj3wwvyphU1yUT9MPhR5tFyiaSwvaU5WsFBkGPSt-xPcDRSCG-ClJVTsaTCyGb8dd4TZPbclbg" type="text/javascript"></script>
+
+<script>
+  google.load("jquery", "1.6.2");
+  google.setOnLoadCallback(function () {
+    safari.application.addEventListener("navigate", function (evt) {
+      var url = evt.target.url;
+      // lookup this tab's edits
+      var url_sha1 = hex_sha1(url);
+      jQuery.getJSON(
+        "http://www.emendapp.com/search/edits.json",
+        {q:"url_sha1:"+url_sha1},
+        function (res) {
+          if (res.edits.length) {
+            evt.target.page.dispatchMessage('onEdits', res);
+          }
+        }
+      )
+    });
+  });
+</script>
