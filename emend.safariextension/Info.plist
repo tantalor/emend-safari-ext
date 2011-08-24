@@ -41,5 +41,7 @@
 			<string>All</string>
 		</dict>
 	</dict>
+	<key>Website</key>
+	<string>https://github.com/tantalor/emend-safari-ext</string>
 </dict>
 </plist>
