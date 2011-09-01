@@ -2,10 +2,23 @@
 <script src="https://www.google.com/jsapi?key=ABQIAAAA-97Boj3wwvyphU1yUT9MPhR5tFyiaSwvaU5WsFBkGPSt-xPcDRSCG-ClJVTsaTCyGb8dd4TZPbclbg" type="text/javascript"></script>
 
 <script>
+  // returns toolbarItem for the given browserWindow
+  function toolbarItem (browserWindow) {
+    for (var i = 0; i < safari.extension.toolbarItems.length; i++) {
+      if (safari.extension.toolbarItems[i].browserWindow == browserWindow) {
+        return safari.extension.toolbarItems[i];
+      }
+    }
+  }
+  
   google.load("jquery", "1.6.2");
   google.setOnLoadCallback(function () {
     // on navigate
     safari.application.addEventListener("navigate", function (evt) {
+      // clear badge while we're loading if this is the active tab
+      if (evt.target.browserWindow.activeTab == evt.target) {
+        toolbarItem(evt.target.browserWindow).badge = 0;
+      }
       var url_sha1 = hex_sha1(evt.target.url.replace(/#.*/, ''));
       jQuery.getJSON(
         "http://www.emendapp.com/search/edits.json",
@@ -13,10 +26,23 @@
         function (res) {
           if (res.edits.length) {
             evt.target.page.dispatchMessage('onEdits', res);
+            evt.target.state = {count: res.edits.length};
+            // show count if this is the active tab
+            if (evt.target.browserWindow.activeTab == evt.target) {
+              toolbarItem(evt.target.browserWindow).badge = res.edits.length;
+            }
           }
         }
       )
     });
+    
+    // change tab
+    safari.application.addEventListener("activate", function (evt) {
+      if (evt.target instanceof SafariBrowserTab) {
+        // display count for this tab
+        toolbarItem(evt.target.browserWindow).badge = evt.target.state && evt.target.state.count
+      }
+    }, true);
     
     // on click
     safari.application.addEventListener("command", function (evt) {
