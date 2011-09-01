@@ -4,6 +4,7 @@
 <script>
   google.load("jquery", "1.6.2");
   google.setOnLoadCallback(function () {
+    // on navigate
     safari.application.addEventListener("navigate", function (evt) {
       var url_sha1 = hex_sha1(evt.target.url.replace(/#.*/, ''));
       jQuery.getJSON(
@@ -16,5 +17,12 @@
         }
       )
     });
+    
+    // on click
+    safari.application.addEventListener("command", function (evt) {
+      var url_sha1 = hex_sha1(evt.target.browserWindow.activeTab.url.replace(/#.*/, ''));
+      var tab = evt.target.browserWindow.openTab();
+      tab.url = "http://www.emendapp.com/search/edits?q=url_sha1:"+url_sha1;
+    }, false);
   });
 </script>
