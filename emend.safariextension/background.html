@@ -5,9 +5,7 @@
   google.load("jquery", "1.6.2");
   google.setOnLoadCallback(function () {
     safari.application.addEventListener("navigate", function (evt) {
-      var url = evt.target.url;
-      // lookup this tab's edits
-      var url_sha1 = hex_sha1(url);
+      var url_sha1 = hex_sha1(evt.target.url.replace(/#.*/, ''));
       jQuery.getJSON(
         "http://www.emendapp.com/search/edits.json",
         {q:"url_sha1:"+url_sha1},
