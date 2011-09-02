@@ -42,5 +42,13 @@ safari.self.addEventListener("message", function (evt) {
         replaceText(document.body, edit.original, span);
       }
     }
+  } else if (evt.name === "menuItemClicked") {
+    var url = location.href.replace(/#.*/, '');
+    var selection = encodeURIComponent(document.getSelection())
+    if (url && selection) {
+      safari.self.tab.dispatchMessage("openTab", {
+        url: "http://www.emendapp.com/?url="+encodeURIComponent(url)+"&original="+selection
+      });
+    };
   }
 }, false);

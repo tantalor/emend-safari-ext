@@ -59,9 +59,25 @@
     
     // on click
     safari.application.addEventListener("command", function (evt) {
-      var url_sha1 = hex_sha1(evt.target.browserWindow.activeTab.url.replace(/#.*/, ''));
-      var tab = evt.target.browserWindow.openTab();
-      tab.url = "http://www.emendapp.com/search/edits?status=open&q=url_sha1:"+url_sha1;
+      if (evt.target.command == "menu-item") {
+        safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('menuItemClicked');
+      } else if (evt.target.command == "toolbar-item") {
+        var url_sha1 = hex_sha1(evt.target.browserWindow.activeTab.url.replace(/#.*/, ''));
+        var tab = evt.target.browserWindow.openTab();
+        tab.url = "http://www.emendapp.com/search/edits?status=open&q=url_sha1:"+url_sha1;
+      }
+    }, false);
+    
+    // open tab
+    safari.application.addEventListener("message", function (evt) {
+      if (evt.name === "openTab" && evt.message.url) {
+        var tab = safari.application.activeBrowserWindow.openTab();
+        tab.url = evt.message.url;
+      }
     }, false);
   });
 </script>
+
+
+
+    
