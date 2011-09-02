@@ -3,7 +3,7 @@
 
 <script>
   // returns toolbarItem for the given browserWindow
-  function toolbarItem (browserWindow) {
+  function toolbarItemForWindow (browserWindow) {
     for (var i = 0; i < safari.extension.toolbarItems.length; i++) {
       if (safari.extension.toolbarItems[i].browserWindow == browserWindow) {
         return safari.extension.toolbarItems[i];
@@ -11,14 +11,33 @@
     }
   }
   
+  // update the toolbarItem for the given browserTab
+  function updateToolbarItem (browserTab) {
+    if (browserTab.browserWindow.activeTab != browserTab) return;
+    var toolbarItem = toolbarItemForWindow(browserTab.browserWindow);
+    if (browserTab.state && browserTab.state.count) {
+      toolbarItem.disabled = 0;
+      toolbarItem.badge = browserTab.state.count;
+      toolbarItem.toolTip = "This page has "+browserTab.state.count+" open edit"+(browserTab.state.count != 1 ? "s" : "")+".";
+    } else {
+      toolbarItem.disabled = 1;
+      toolbarItem.badge = 0;
+      toolbarItem.toolTip = "This page has no open edits.";
+    }
+  }
+  
   google.load("jquery", "1.6.2");
   google.setOnLoadCallback(function () {
+    // before navigate
+    safari.application.addEventListener("beforeNavigate", function (evt) {
+      // clear this tab's state
+      delete evt.target.state;
+      updateToolbarItem(evt.target);
+    });
+    
     // on navigate
     safari.application.addEventListener("navigate", function (evt) {
-      // clear badge while we're loading if this is the active tab
-      if (evt.target.browserWindow.activeTab == evt.target) {
-        toolbarItem(evt.target.browserWindow).badge = 0;
-      }
+      // lookup edits
       var url_sha1 = hex_sha1(evt.target.url.replace(/#.*/, ''));
       jQuery.getJSON(
         "http://www.emendapp.com/search/edits.json",
@@ -27,10 +46,7 @@
           if (res.edits.length) {
             evt.target.page.dispatchMessage('onEdits', res);
             evt.target.state = {count: res.edits.length};
-            // show count if this is the active tab
-            if (evt.target.browserWindow.activeTab == evt.target) {
-              toolbarItem(evt.target.browserWindow).badge = res.edits.length;
-            }
+            updateToolbarItem(evt.target);
           }
         }
       )
@@ -38,10 +54,7 @@
     
     // change tab
     safari.application.addEventListener("activate", function (evt) {
-      if (evt.target instanceof SafariBrowserTab) {
-        // display count for this tab
-        toolbarItem(evt.target.browserWindow).badge = evt.target.state && evt.target.state.count
-      }
+      updateToolbarItem(evt.target);
     }, true);
     
     // on click
