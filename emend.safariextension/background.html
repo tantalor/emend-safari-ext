@@ -41,7 +41,7 @@
       var url_sha1 = hex_sha1(evt.target.url.replace(/#.*/, ''));
       jQuery.getJSON(
         "http://www.emendapp.com/search/edits.json",
-        {q:"url_sha1:"+url_sha1, status: "open"},
+        {url_sha1:url_sha1, status: "open"},
         function (res) {
           if (res.edits.length) {
             evt.target.page.dispatchMessage('onEdits', res);
@@ -64,7 +64,7 @@
       } else if (evt.target.command == "toolbar-item") {
         var url_sha1 = hex_sha1(evt.target.browserWindow.activeTab.url.replace(/#.*/, ''));
         var tab = evt.target.browserWindow.openTab();
-        tab.url = "http://www.emendapp.com/search/edits?status=open&q=url_sha1:"+url_sha1;
+        tab.url = "http://www.emendapp.com/search/edits?status=open&url_sha1="+url_sha1;
       }
     }, false);
     
